@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="keywords" content="wallpaper, background, image, photo, picture, graphic, art, render, illustration, design, draw, HD, 壁纸, 背景, 图片, 照片, 图画, 插图, 设计, 绘画, 高清" />
+    <meta name="description" content="wallpaper, background, image, photo, picture, graphic, art, render, illustration, design, draw, HD, 壁纸, 背景, 图片, 照片, 图画, 插图, 设计, 绘画, 高清" />
+    <meta name="baidu-site-verification" content="codeva-cGfgNTlCOU" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HD Wallpapers, 高清壁纸</title>
+    <style>
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0 4px;
+            height: fit-content;
+        }
+
+        /* Create four equal columns that sits next to each other */
+        .column {
+            flex: calc(100vw / 6);
+            max-width: 100%;
+            padding: 0 4px;
+            height: fit-content;
+        }
+
+            .column img {
+                margin-top: 8px;
+                vertical-align: middle;
+                width: 100%;
+                border: 1px solid #5bc0de;
+                border-radius: 8px;
+                transition: all 0.3s ease-in-out;
+                min-height: 0.2vh;
+            }
+
+                .column img:hover {
+                    transform: scale(1.01); /* added scaling effect on hover */
+                    border: 2px solid #217bb2; /* added border color change on hover */
+                }
+
+        .btn {
+            /* 在父元素的右上角，30px的正方型*/
+            /*position: fixed;*/
+            width: 60px;
+            height: 50px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+            font-size: 24pt;
+            padding-top: 6px;
+            margin: 1px;
+        }
+        #startMask{
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0);
+            display: none;
+            color:white;
+            font-size: 24pt;
+            text-align: center;
+            padding-top: 40vh;  
+        }
+    </style>
+    <script src="jquery.min.js"></script>
+    <script src="lozad.min.js"></script>
+    <script>
+        $(function () {
+            $('#startMask').show();
+
+            const screenWidth = window.innerWidth;
+            let modNum;
+
+            if (screenWidth >= 1200) {
+                modNum = 4;
+            } else if (screenWidth >= 992) {
+                modNum = 3;
+            } else if (screenWidth >= 768) {
+                modNum = 2;
+            } else {
+                modNum = 1;
+            }
+
+            for (var t = 0; t < modNum; t++) {
+                $('#image-wall').append("<div id='image-col" + t + "' class='column'></div>")
+            }
+
+            let pageSize = modNum * 1;
+
+            // 获取窗口高度
+            const screenHeight = window.innerHeight;
+
+            let imageCount = $("#image-wall img").length;
+            var showMask = false;
+
+            var data = [];
+            $.getJSON("preview/index.json", function (result) {
+                data = result;
+                appendImages(true);
+            });
+
+            const observer = lozad(".lozad", {
+                threshold: 0.9
+            });
+
+            // 禁用鼠标右键
+            $(document).on("contextmenu", function (e) {
+                return false;
+            });
+
+            function getMinHeightColumn() {
+
+                var colHeight = new Array(modNum);
+                var minCol = 0;
+                for (var i = 0; i < modNum; i++) {
+                    colHeight[i] = $("#image-col" + i).height();
+                    if (colHeight[i] < colHeight[minCol]) {
+                        minCol = i;
+                    }
+                }
+                //console.info("d:" + colHeight);
+                return minCol;
+            }
+
+            function appendImages(firstPage) {
+
+                let height = 0;
+
+                // 动态添加图片
+                while (height < screenHeight && imageCount < data.length) {
+
+                    if (imageCount == 60) {
+                        showMaskPanel();
+                        return;
+                    }
+
+                    const url = data[imageCount];
+
+                    const img = $("<img>");
+                    img.attr("data-src", url);
+                    img.attr("class", "lozad");
+                    img.attr('src', url);
+                    img.attr('alt', '');
+                    img.attr('height', '300px');
+
+                    var mod = imageCount % modNum;
+
+
+                    $("#image-col" + mod).append(img);
+
+                    img.on("load", function () {
+
+                        if (mod === modNum - 1) {
+                            observer.observe();
+                            $("#startMask").hide();
+                        }
+
+                        var $this = $(this);
+                        if ($this.removeAttr('height'));
+
+                        var h = $this.height();
+                        var colHeight = $this.parent().height();
+                        var col = $this.parent().attr("id").replace("image-col", "");
+
+                        var minCol = getMinHeightColumn();
+                        if (col == minCol)
+                            return;
+                        height = $('#image-wall').height();
+                        var minHeight = $("#image-col" + minCol).height();
+                        console.info("mh:" + minHeight + ", h:" + h + ", max:" + $('#image-wall').height() + 100);
+
+                        if (minHeight + h > height + 100) {
+                            console.info("no move");
+                            return;
+                        }
+
+                        if (colHeight > minHeight - 300) {
+                            $("#image-col" + minCol).append(this);
+                        }
+
+                    });
+
+                    imageCount++;
+
+
+                    // 当第一行图片加载完成后，计算第一行图片的高度，然后再加载第二行图片
+                    if (mod === modNum - 1) {
+                        // 等待0.8秒，等界面渲染完成后再计算高度
+                        setTimeout(function () {
+                            const height = $('#image-wall').height();
+                            const minCol = getMinHeightColumn();
+                            const minHeight = $('#image-col' + minCol).height();
+
+                            //console.log(height);
+                            if (height < screenHeight || minHeight < screenHeight - 100)
+                                appendImages(false);
+                        }, 800);
+                        break;
+                    }
+                }
+
+
+            }
+
+            $(window).on("scroll resize touchmove", function () {
+                const scrollTop = $(window).scrollTop();
+                const viewportHeight = $(window).height();
+                const documentHeight = $(document).height();
+                if (scrollTop + viewportHeight + 10 >= documentHeight) {
+                    appendImages(false);
+                }
+                else {
+                    if (showMask) {
+                        $('#mask').hide();
+                        $("#bottom").show();
+                        showMask = false;
+                    }
+                }
+            });
+
+            // 所有图片点击事件
+            $("#image-wall").on("click", "img", function () {
+                const src = $(this).attr("src");
+                // 显示一个屏蔽层，上面显示src，点击屏蔽层，屏蔽层消失
+                const div = $("<div></div>");
+                div.attr("id", "mask");
+                div.attr("style", "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;");
+                // 插入一个图片，图片的src为点击的图片的src
+                const img = $("<img>");
+                const hdSrc = src.replace("preview/", "wallpaper/");
+                img.attr("src", hdSrc);
+                //  图片要垂直居中，图片的最大宽度为90%，最大高度为90%
+                img.attr("style", "max-width: 90vw; max-height: 90vh; ");
+
+
+
+
+                // 在img的表面做个透明层，和图片完全重合，然后把两个按钮放在透明层上
+
+                const mask = $("<div style='position:relative'></div>");
+                const mask2 = $("<div style='position:absolute;right:0;top:0;white-space: nowrap; display:none;'></div>");
+                div.append(mask);
+                mask.append(mask2);
+                mask.append(img);
+
+                //  div的右上角加入一个关闭按钮
+                const close = $("<span></span>");
+                close.addClass("btn");
+                close.text("×");
+                close.on("click", function () {
+                    div.remove();
+                    showMask = false;
+                });
+
+                //  div的右上角加入一个下载按钮
+                const download = $("<span></span>");
+                download.addClass("btn");
+                download.text("↓");
+                download.on("click", function () {
+                    const a = $("<a></a>");
+                    a.attr("href", hdSrc);
+                    a.attr("download", "");
+                    a[0].click();
+                });
+                mask2.append(download);
+
+                mask2.append(close);
+
+                // 在mask层的底部，加入一个层，用来显示图片的实际宽高
+                const info = $("<div></div>");
+                info.attr("style", "position: absolute; bottom: 0; left: 0; width: 100%; background-color: rgba(0, 0, 0, 0.5); color: white; text-align: center; line-height: 5vh");
+                //info.text(img[0].naturalWidth + "×" + img[0].naturalHeight);
+                img.on("load", function () {
+                    info.text(this.naturalWidth + "×" + this.naturalHeight);
+                    mask2.show();
+                });
+                mask.append(info);
+
+
+
+                //div.append(img);
+
+                $("body").append(div);
+                showMask = true;
+                // 按下esc键，屏蔽层消失
+                $(document).on("keydown", function (e) {
+                    if (e.keyCode === 27) {
+                        div.remove();
+                        showMask = false;
+                    }
+                });
+                div.on("click", function () {
+                    div.remove();
+                    showMask = false;
+                });
+
+            });
+
+            function getLang() {
+                const lang = navigator.language || navigator.userLanguage;
+                if (lang.indexOf("zh") >= 0)
+                    return "zh";
+                else
+                    return "en";
+            }
+
+            function getMsg(msgId) {
+                if (getLang() === "zh")
+                    return zhMsg[msgId];
+                else
+                    return enMsg[msgId];
+            }
+
+            let zhMsg = new Array();
+            let enMsg = new Array();
+
+            initMsg();
+
+            function initMsg() {
+                zhMsg["loading"] = "加载中...";
+                zhMsg["tip"] = "更多精彩，尽在定时壁纸  ";
+                zhMsg["msstore"] = "微软商店";
+                zhMsg["github"] = "GitHub";
+                zhMsg["desc"] = "每小时自动更新全网最新高清壁纸，打造你的个性桌面";
+                zhMsg["cp"] = "本站所有图片只能用于壁纸";
+
+                enMsg["loading"] = "Loading...";
+                enMsg["tip"] = "More exciting, only in Timed Wallpaper  ";
+                enMsg["msstore"] = "Microsoft Store";
+                enMsg["github"] = "GitHub";
+                enMsg["desc"] = "Automatically update the latest HD wallpaper every hour to create your personalized desktop";
+                enMsg["cp"] = "All images on this site can only be used for wallpaper";
+
+            }
+
+            function bottomMask() {
+                //  添加一个底部浮动层，始终显示在最前面，屏蔽层显示时，浮动层隐藏，屏蔽层隐藏时，浮动层显示
+
+
+                const bottomDiv = $("<div></div>");
+                bottomDiv.attr("id", "bottom");
+                bottomDiv.attr("style", "position: fixed; bottom: 0; left: 0; width: 100vw; height: 10vh; background-color: rgba(127, 127, 127, 0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;");
+                //  底部浮动层换一个亮色的底色
+
+
+                const p = $("<p></p>");
+                p.attr("style", "font-size: 2em; color: white; text-align: center; margin: 0; ");
+
+
+                p.text(getMsg("tip"));
+                const a = $("<a style='padding-top: 20px'><img src='msstore.png' alt width='32' /></a>");
+                a.attr("href", "https://apps.microsoft.com/store/detail/XPFFXTQJ81VRCF");
+                p.append(a);
+
+                const b = $("<a><img src='github.png' alt width='32' /></a>");
+                b.attr("href", "https://github.com/gmij/gmij.github.io/blob/main/DynamicWallpaper/v0.7/DynamicWallpaper.Setup_SIGN.msi");
+                p.append(b);
+
+                bottomDiv.append(p);
+
+                $("body").append(bottomDiv);
+            };
+
+            bottomMask();
+
+            function showMaskPanel() {
+                if (showMask)
+                    return;
+                if ($('#mask').length == 1) {
+                    $('#mask').show();
+                    $("#bottom").hide();
+                    showMask = true;
+                    return;
+                }
+                // 插入一个全局屏蔽层，上面显示更多精彩，尽在定时壁纸，定时壁纸是一个超链接，点击跳转到定时壁纸的微软应用商店页面
+                const div = $("<div></div>");
+                div.attr("id", "mask");
+                div.attr("style", "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;");
+                const p = $("<p></p>");
+                p.attr("style", "font-size: 2em; color: white; text-align: center; margin: 0 0 1em 0;");
+                p.text(getMsg("tip"));
+                div.append(p);
+
+                const a = $("<a><img src='msstore.png' width='40'>" + getMsg("msstore") + "</a>&nbsp;");
+                a.attr("href", "https://apps.microsoft.com/store/detail/XPFFXTQJ81VRCF");
+                a.attr("style", "font-size: 0.5em; color: white; text-align: center; margin: 0 0 1em 0;");
+                p.append(a);
+
+                const b = $("<a><img src='github.png' width='40'>" + getMsg("github") + "</a>");
+                b.attr("href", "https://github.com/gmij/gmij.github.io/blob/main/DynamicWallpaper/v0.7/DynamicWallpaper.Setup_SIGN.msi");
+                b.attr("style", "font-size: 0.5em; color: white; text-align: center; margin: 0 0 1em 0;");
+                p.append(b);
+
+                //  增加一小段文字到屏蔽层中，内容如下：本网站每小时自动更新全网最新高清壁纸，打造你的个性桌面
+                const d = $("<p></p>");
+                d.attr("style", "font-size: 1em; color: white; text-align: center; margin: 0 0 1em 0;");
+                d.text(getMsg("desc"));
+
+                div.append(d);
+
+                //  增加一小段文字到屏蔽层中，内容如下：本网站每小时自动更新全网最新高清壁纸，打造你的个性桌面
+                const e = $("<p></p>");
+                e.attr("style", "font-size: 1em; color: white; text-align: center; margin: 0 0 1em 0;");
+                e.text(getMsg("cp"));
+
+                div.append(e);
+                $("body").append(div);
+                showMask = true;
+                return;
+            }
+
+
+            function AddHead() {
+                const head = document.head;
+                const script = document.createElement('script');
+                script.id = 'cloudflare-web-analytics';
+                script.defer = true;
+                script.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+                script.setAttribute(
+                    'data-cf-beacon',
+                    `{"token": "723f79bbc70f4563bd3cbed91c99645f"}`
+                );
+
+                const existingScript = head.querySelector(`#${script.id}`);
+                if (existingScript) {
+                    head.removeChild(existingScript);
+                }
+
+                head.appendChild(script);
+            }
+
+            AddHead();
+        });
+    </script>
+</head>
+<body>
+    <div id="startMask">Loading...</div>
+    <div id="image-wall" class="row">
+    </div>
+</body>
+</html>
