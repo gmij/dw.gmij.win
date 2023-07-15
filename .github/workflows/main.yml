@@ -1,0 +1,61 @@
+name: Build Json
+on:
+  schedule:
+    - cron: '0 */1 * * *' # every 1 hours
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with: 
+        path: wallpaper
+    - uses: actions/checkout@v3
+      with:
+        repository: gmij/wallpaper.robot
+        path: downloader
+    - name: list dir
+      run: |
+        pwd
+        ls
+        echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ls downloader
+        echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ls wallpaper
+        echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    - name: Publish to GitHub Packages
+      run: |
+        cd downloader
+        dotnet publish -o ./publish -c release -r linux-x64 -p:PublishSingleFile=true --no-self-contained
+    - name: Download Wallpaper
+      run: |
+        cd downloader/publish
+        chmod +x ./Pic.Downloader
+        ./Pic.Downloader
+    - name: list dir
+      run: |
+        pwd
+        ls -l
+        echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ls -l downloader
+        echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        ls -l wallpaper
+        echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    - name: BuildIndexJson
+      run: |
+        cd downloader/publish
+        chmod +x ./BuildIndexJson
+        ./BuildIndexJson
+
+
+    - name: Commit Changes
+      run: |
+        cd wallpaper
+        git config --local user.email "gmij@qq.com"
+        git config --local user.name "Gmij with Github Actions"
+        git add .
+        git diff-index --quiet HEAD || git commit -m "Build Json"
+        git push -f
+        
