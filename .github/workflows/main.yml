@@ -14,6 +14,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         repository: gmij/wallpaper.robot
+        token: ${{ secrets.PAT }}
         path: downloader
         
     - name: Publish to GitHub Packages
