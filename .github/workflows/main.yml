@@ -16,11 +16,7 @@ jobs:
         repository: gmij/wallpaper.robot
         token: ${{ secrets.PAT }}
         path: downloader
-        
-    - name: Publish to GitHub Packages
-      run: |
-        cd downloader
-        dotnet publish -o ./publish -c release -r linux-x64 -p:PublishSingleFile=true --no-self-contained
+        sparse-checkout: publish
         
     - name: Download Wallpaper
       run: |
