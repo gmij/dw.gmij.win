@@ -18,8 +18,8 @@ jobs:
         # "false" if necessary for your workflow
         android: true
         dotnet: false
-        haskell: false
-        large-packages: true
+        haskell: true
+        large-packages: false
         docker-images: true
         swap-storage: true
     - name: check disk
