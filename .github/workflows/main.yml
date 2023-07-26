@@ -22,6 +22,9 @@ jobs:
         large-packages: true
         docker-images: true
         swap-storage: true
+    - name: check disk
+      run: |
+        df -H
     - uses: actions/checkout@v3
       with: 
         path: wallpaper
