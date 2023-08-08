@@ -31,6 +31,10 @@ jobs:
         dotnet --info
         
     - uses: actions/checkout@v3
+      with: 
+        path: wallpaper
+        
+    - uses: actions/checkout@v3
       with:
         repository: gmij/wallpaper.robot
         token: ${{ secrets.PAT }}
@@ -41,4 +45,23 @@ jobs:
       run: |
         cd downloader/publish
         chmod +x ./Pic.Downloader
-        ./Pic.Downloader        
+        ./Pic.Downloader
+
+    - name: BuildIndexJson
+      run: |
+        cd downloader/publish
+        chmod +x ./BuildIndexJson
+        ./BuildIndexJson
+
+
+    - name: Commit Changes
+      run: |
+        cd wallpaper
+        git config --local user.email "gmij@qq.com"
+        git config --local user.name "Gmij with Github Actions"
+        git add .
+        git diff-index --quiet HEAD || git commit -m "Build Json"
+        git push -f
+    - name: check disk
+      run: |
+        df -H        
