@@ -17,17 +17,14 @@ jobs:
         # all of these default to true, but feel free to set to
         # "false" if necessary for your workflow
         android: true
-        dotnet: false
+        dotnet: true
         haskell: true
-        large-packages: false
+        large-packages: true
         docker-images: true
         swap-storage: true
-    - name: check disk
+    - name: install .net 6
       run: |
-        df -H
-    - uses: actions/checkout@v3
-      with: 
-        path: wallpaper
+        sudo apt install 	dotnet-runtime-6.0
         
     - uses: actions/checkout@v3
       with:
@@ -40,23 +37,4 @@ jobs:
       run: |
         cd downloader/publish
         chmod +x ./Pic.Downloader
-        ./Pic.Downloader
-
-    - name: BuildIndexJson
-      run: |
-        cd downloader/publish
-        chmod +x ./BuildIndexJson
-        ./BuildIndexJson
-
-
-    - name: Commit Changes
-      run: |
-        cd wallpaper
-        git config --local user.email "gmij@qq.com"
-        git config --local user.name "Gmij with Github Actions"
-        git add .
-        git diff-index --quiet HEAD || git commit -m "Build Json"
-        git push -f
-    - name: check disk
-      run: |
-        df -H        
+        ./Pic.Downloader        
