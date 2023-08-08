@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Maximize build space
-      uses: gmij/max-build-space@master
+      uses: gmij/max-build-space@main
       with:
         root-reserve-mb: 512
         swap-size-mb: 1024
