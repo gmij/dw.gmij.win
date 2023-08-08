@@ -24,7 +24,8 @@ jobs:
         swap-storage: true
     - name: install .net 6
       run: |
-        sudo apt install 	dotnet-runtime-6.0
+        sudo apt install -y	dotnet-runtime-6.0
+        dotnet --info
         
     - uses: actions/checkout@v3
       with:
