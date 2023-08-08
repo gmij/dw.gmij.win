@@ -24,6 +24,9 @@ jobs:
         swap-storage: true
     - name: install .net 6
       run: |
+        sudo apt remove 'dotnet*' 'aspnet*' 'netstandard*'
+        sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+        sudo apt update
         sudo apt install -y	dotnet-runtime-6.0
         dotnet --info
         
